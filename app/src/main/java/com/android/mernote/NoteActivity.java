@@ -3,8 +3,10 @@ package com.android.mernote;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +26,7 @@ public class NoteActivity extends AppCompatActivity {
     private EditText mTextNoteText;
     private int mNotePosition;
     private boolean mIsCancelling;
-
+    private NoteActivityViewModel mViewModel;
 
 
     @Override
@@ -33,6 +35,20 @@ public class NoteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(), ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
+
+        mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
+
+        if(savedInstanceState != null && mViewModel.mIsNewlyCreated)
+        {
+            mViewModel.restoreState(savedInstanceState);
+        }
+
+        mViewModel.mIsNewlyCreated = false;
+
+
+
+
 
         mSpinnerCourses =   findViewById(R.id.spinner_courses);
 
@@ -48,6 +64,7 @@ public class NoteActivity extends AppCompatActivity {
 
 
         readDisplayStateValues();
+        saveOriginalNoteValues();
 
         mTextNoteTitle = findViewById(R.id.text_note_title);
         mTextNoteText =     findViewById(R.id.text_note_text);
@@ -65,6 +82,17 @@ public class NoteActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
+    }
+
+    private void saveOriginalNoteValues() {
+
+        if(mIsNewNote)
+            return;
+
+        mViewModel.mOriginalNoteCourseId = mNote.getCourse().getCourseId();
+        mViewModel.mOriginalNoteTitle = mNote.getTitle();
+        mViewModel.mOriginalNoteText = mNote.getText();
+
     }
 
     @Override
@@ -102,12 +130,31 @@ public class NoteActivity extends AppCompatActivity {
             if(mIsNewNote) {
                 DataManager.getInstance().removeNote(mNotePosition);
             }
+            else{
+                storePreviousNoteValues();
+            }
         }
         else{
             saveNote();
         }
 
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(outState != null)
+            mViewModel.saveState(outState  );
+
+    }
+
+    private void storePreviousNoteValues() {
+
+        CourseInfo course = DataManager.getInstance().getCourse(mViewModel.mOriginalNoteCourseId);
+        mNote.setCourse(course);
+        mNote.setTitle(mViewModel.mOriginalNoteTitle);
+        mNote.setText(mViewModel.mOriginalNoteText);
     }
 
     private void saveNote() {
