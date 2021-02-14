@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import android.widget.Spinner;
 import java.util.List;
 
 public class NoteActivity extends AppCompatActivity {
+    private final String TAG = getClass().getSimpleName();
     public static final String NOTE_POSOTION = "com.android.mernote.NOTE_POSOTION";
     public static final int POSITION_NOT_SET = -1;
     private NoteInfo mNote;
@@ -72,6 +74,8 @@ public class NoteActivity extends AppCompatActivity {
         if(!mIsNewNote ) {
 
             displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
+
+            Log.d(TAG,"onCreate");
 
         }
        /* FloatingActionButton fab = findViewById(R.id.fab);
@@ -138,6 +142,8 @@ public class NoteActivity extends AppCompatActivity {
             saveNote();
         }
 
+        Log.d(TAG,"onPause");
+
 
     }
 
@@ -193,15 +199,15 @@ public class NoteActivity extends AppCompatActivity {
 
     private void readDisplayStateValues() {
         Intent intent = getIntent();
-        int position = intent.getIntExtra(NOTE_POSOTION, POSITION_NOT_SET);
+        mNotePosition = intent.getIntExtra(NOTE_POSOTION, POSITION_NOT_SET);
 
-        mIsNewNote = position == POSITION_NOT_SET;
+        mIsNewNote = mNotePosition == POSITION_NOT_SET;
 
         if(mIsNewNote) {
             createNewNote();
         }
         else{
-            mNote = DataManager.getInstance().getNotes().get(position);
+            mNote = DataManager.getInstance().getNotes().get(mNotePosition);
         }
 
 
@@ -211,7 +217,7 @@ public class NoteActivity extends AppCompatActivity {
     private void createNewNote() {
         DataManager dm = DataManager.getInstance();
         mNotePosition = dm.createNewNote();
-        mNote = dm.getNotes().get(mNotePosition);
+       // mNote = dm.getNotes().get(mNotePosition);
 
     }
 }
