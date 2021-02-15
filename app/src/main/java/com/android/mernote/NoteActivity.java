@@ -103,6 +103,8 @@ public class NoteActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_note, menu);
+
+
         return true;
     }
 
@@ -123,8 +125,29 @@ public class NoteActivity extends AppCompatActivity {
             mIsCancelling = true;
             finish();
         }
+        else if (id == R.id.action_next)
+        {
+            moveNext();
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void moveNext() {
+
+        saveNote();
+
+
+        ++mNotePosition;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+        saveOriginalNoteValues();
+
+        displayNote(mSpinnerCourses, mTextNoteTitle,mTextNoteText);
+
+
+
+
     }
 
     @Override
