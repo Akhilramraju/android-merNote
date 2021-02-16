@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CourseTitle" parent="@style/TextAppearance.AppCompat.Medium" >
+    <item name="android:textColor">@color/pale_orange</item>
+    <item name="android:textStyle">bold</item>
+    </style>
+</resources>
