@@ -5,11 +5,12 @@ import androidx.test.rule.ActivityTestRule;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 import static androidx.test.espresso.Espresso.*;
 import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
