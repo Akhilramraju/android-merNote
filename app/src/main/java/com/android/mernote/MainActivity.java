@@ -1,6 +1,8 @@
 package com.android.mernote;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +35,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private LinearLayoutManager mNotesLayoutManager;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCourseLayoutManager;
+    private NoteKeeperOpenHelper mDbOpenHelper;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mDbOpenHelper = new NoteKeeperOpenHelper(this);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +71,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(MainActivity.this);
 
         initiazeDisplayContent();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mDbOpenHelper.close();
+
+        super.onDestroy();
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.action_settings){
+            startActivity(new Intent(this,SettingsActivity.class));
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -118,7 +142,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void displayCourses() {
         mRecyclesItems.setLayoutManager(mCourseLayoutManager);
         mRecyclesItems.setAdapter(mCourseRecyclerAdapter);
-        selectNavigationMenuItem(R.id.nav_courses);
+
+        SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+        selectNavigationMenuItem(R.id.nav_courses,R.id.nav_notes);
     }
 
     private void displayNotes()
@@ -126,13 +152,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclesItems.setLayoutManager(mNotesLayoutManager);
         mRecyclesItems.setAdapter(mNoteRecyclerAdapter);
 
-        selectNavigationMenuItem(R.id.nav_notes);
+        selectNavigationMenuItem(R.id.nav_notes,R.id.nav_courses);
     }
 
-    private void selectNavigationMenuItem(int id) {
+    private void selectNavigationMenuItem(int id,int dId) {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
-        //menu.setGroupCheckable(R.id.nav_group,false,false);
+
+        menu.findItem(dId).setChecked(false);
         menu.findItem(id).setChecked(true);
     }
 

@@ -4,4 +4,9 @@
     <item name="android:textColor">@color/pale_orange</item>
     <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="AddFab" parent="@style/Widget.Design.FloatingActionButton">
+        <item name="srcCompat">@drawable/ic_baseline_add_circle_24</item>
+        <item name="android:tint">@color/pale_orange </item>
+    </style>
 </resources>
