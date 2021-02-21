@@ -28,7 +28,7 @@ public class DataManager {
 
         final String[] CourseColumns = {CourseInfoEntry.COLUMN_COURSE_ID, CourseInfoEntry.COLUMN_COURSE_TITLE};
 
-        final Cursor  courseCursor = db.query(CourseInfoEntry.TABLE_NAME, CourseColumns, null, null, null, null, null);
+        final Cursor  courseCursor = db.query(CourseInfoEntry.TABLE_NAME, CourseColumns, null, null, null, null, CourseInfoEntry.COLUMN_COURSE_TITLE);
 
         loadCoursesFromDatabase(courseCursor);
 
@@ -36,7 +36,7 @@ public class DataManager {
                 NoteInfoEntry.COLUMN_NOTE_TITLE,
                 NoteInfoEntry.COLUMN_NOTE_TEXT,
                 NoteInfoEntry.COLUMN_COURSE_ID};
-        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, NoteColumns, null, null, null, null, null);
+        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, NoteColumns, null, null, null, null, NoteInfoEntry.COLUMN_NOTE_TITLE);
         loadNotesFromDatabase(noteCursor);
     }
 
@@ -49,6 +49,8 @@ public class DataManager {
 
 
         dm.mNotes.clear();
+        System.out.println("Notes size  before : "+dm.mNotes.size());
+
         while(cursor.moveToNext())
         {
             String noteTitle = cursor.getString(noteTitlePos);
@@ -57,10 +59,13 @@ public class DataManager {
 
             CourseInfo noteCourse = dm.getCourse(courseId);
             NoteInfo note = new NoteInfo(noteCourse,noteTitle,noteText);
+
             dm.mNotes.add(note);
 
 
         }
+        System.out.println("Notes size : "+dm.mNotes.size());
+
         cursor.close();
 
 
@@ -73,10 +78,8 @@ public class DataManager {
 
         DataManager dm = getInstance();
 
-       // dm.mCourses.clear();
-        List<CourseInfo> courses = new ArrayList<>();
 
-         int i = 0;
+         dm.mCourses.clear();
 
 
 
@@ -87,7 +90,7 @@ public class DataManager {
 
             CourseInfo course = new CourseInfo(courseId,courseTitle,null);
 
-            courses.add(course);
+
             dm.mCourses.add(course);
 
 
