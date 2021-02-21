@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 */
 
+        DataManager.loadFromDatabase(mDbOpenHelper);
+
         mRecyclesItems = findViewById(R.id.list_items);
         mNotesLayoutManager = new LinearLayoutManager(this);
         mCourseLayoutManager = new GridLayoutManager(this,
@@ -143,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclesItems.setLayoutManager(mCourseLayoutManager);
         mRecyclesItems.setAdapter(mCourseRecyclerAdapter);
 
-        SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+
         selectNavigationMenuItem(R.id.nav_courses,R.id.nav_notes);
     }
 
