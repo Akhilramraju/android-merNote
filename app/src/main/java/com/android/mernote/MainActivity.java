@@ -1,6 +1,7 @@
 package com.android.mernote;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 
+import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -93,8 +95,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
-        mNoteRecyclerAdapter.notifyDataSetChanged();
+        loadNotes();
+        //   mNoteRecyclerAdapter.notifyDataSetChanged();
         //     mAdapterNotes.notifyDataSetChanged();
+    }
+
+    private void loadNotes() {
+        SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+        final String [] NoteColumns = {
+                NoteInfoEntry.COLUMN_NOTE_TITLE,
+                NoteInfoEntry.COLUMN_COURSE_ID,
+                NoteInfoEntry._ID};
+        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, NoteColumns, null, null, null, null, NoteInfoEntry.COLUMN_NOTE_TITLE);
+        mNoteRecyclerAdapter.changeCursor(noteCursor);
+
+
     }
 
     private void initiazeDisplayContent() {
@@ -129,8 +144,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 getResources().getInteger(R.integer.course_grid_span));
 
 
-        List<NoteInfo> notes = DataManager.getInstance().getNotes();
-        mNoteRecyclerAdapter = new NoteRecyclerAdapter(this,notes);
+      //  List<NoteInfo> notes = DataManager.getInstance().getNotes();
+        mNoteRecyclerAdapter = new NoteRecyclerAdapter(this,null);
         displayNotes();
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
