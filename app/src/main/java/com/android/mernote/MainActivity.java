@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 
+import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         LoaderManager.getInstance(this).restartLoader(LOADER_NOTES,null,this  );
 
-        loadNotes();
+       // loadNotes();
         //   mNoteRecyclerAdapter.notifyDataSetChanged();
         //     mAdapterNotes.notifyDataSetChanged();
     }
@@ -246,12 +247,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 public Cursor loadInBackground() {
                     SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
                     final String[] noteColumns = {
-                            NoteInfoEntry._ID,
+                            NoteInfoEntry.getQName(NoteInfoEntry._ID),
                             NoteInfoEntry.COLUMN_NOTE_TITLE,
-                            NoteInfoEntry.COLUMN_COURSE_ID};
-                    final String noteOrderBy = NoteInfoEntry.COLUMN_COURSE_ID +
+                     //       NoteInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID),
+                            CourseInfoEntry.COLUMN_COURSE_TITLE
+                    };
+
+                    final String noteOrderBy = CourseInfoEntry.COLUMN_COURSE_TITLE +
                             "," + NoteInfoEntry.COLUMN_NOTE_TITLE;
-                    return db.query(NoteInfoEntry.TABLE_NAME, noteColumns,
+
+                    //joining note_info and
+
+                    String tableswithJoin = NoteInfoEntry.TABLE_NAME + " JOIN " + CourseInfoEntry.TABLE_NAME + " ON "
+                            + NoteInfoEntry.getQName( NoteInfoEntry.COLUMN_COURSE_ID)
+                            +  " = " + CourseInfoEntry.getQName(CourseInfoEntry.COLUMN_COURSE_ID);
+
+                    return db.query(tableswithJoin, noteColumns,
                             null, null, null, null, noteOrderBy);
                 }
             };
@@ -269,8 +280,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         if(loader.getId() == LOADER_NOTES)  {
+
             mNoteRecyclerAdapter.changeCursor(null);
         }
+
 
     }
 }

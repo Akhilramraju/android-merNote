@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
 
             //Get column indexes from mCursor
 
-        mCoursePos = mCursor.getColumnIndex(NoteInfoEntry.COLUMN_COURSE_ID);
+        mCoursePos = mCursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_TITLE);
         mNoteTitlePos = mCursor.getColumnIndex(NoteInfoEntry.COLUMN_NOTE_TITLE);
         mIdPos = mCursor.getColumnIndex(NoteInfoEntry._ID);
 
@@ -46,7 +47,7 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
 
     public void changeCursor(Cursor cursor)
     {
-        if(mCursor != null) mCursor.close();
+       // if(mCursor != null) mCursor.close();
 
         mCursor = cursor;
         populateColumnPositioins();
