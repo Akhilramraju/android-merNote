@@ -127,7 +127,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         }
        /* FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
-            @Override
+            @Override 
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Actio
@@ -364,7 +364,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         //    mNote = DataManager.getInstance().getNotes().get(mNoteId);
 
         }
-        mNote = DataManager.getInstance().getNotes().get(mNoteId);
+      //  mNote = DataManager.getInstance().getNotes().get(mNoteId);
 
 
 
