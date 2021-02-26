@@ -17,7 +17,6 @@ import androidx.loader.content.Loader;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -25,9 +24,8 @@ import android.widget.Spinner;
 import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
 
-import java.util.List;
-
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
+    public static final int LOADER_COURSES = 1;
     private final String TAG = getClass().getSimpleName();
     public static final String NOTE_ID = "com.android.mernote.NOTE_POSOTION";
     private Cursor mNoteCursor;
@@ -36,6 +34,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private int mNoteTextPos;
     private SimpleCursorAdapter mAdapterCourses;
     private final int LOADER_NOTES = 0;
+    private boolean mCourseQueryFinished;
+    private boolean mNotesQueryFinished;
 
     @Override
     protected void onDestroy() {
@@ -45,7 +45,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public static final int ID_NOT_SET = -1;
-    private NoteInfo mNote;
+    private NoteInfo mNote = new NoteInfo(DataManager.getInstance().getCourses().get(0), "", "");
     private boolean mIsNewNote;
     private Spinner mSpinnerCourses;
     private EditText mTextNoteTitle;
@@ -86,24 +86,41 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
        // List<CourseInfo> courses = DataManager.getInstance().getCourses();
 
 
-        mAdapterCourses = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, null,
+   /*     mAdapterCourses = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, null,
                 new String[] {CourseInfoEntry.COLUMN_COURSE_TITLE},new int[] {android.R.id.text1},0);
 
         mAdapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item );
+        mSpinnerCourses.setAdapter(mAdapterCourses);*/
+
+        mAdapterCourses = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, null,
+                new String[] {CourseInfoEntry.COLUMN_COURSE_TITLE},
+                new int[] {android.R.id.text1}, 0);
+        mAdapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerCourses.setAdapter(mAdapterCourses);
 
-        loadCourseData();
+
+
+
+
+        LoaderManager.getInstance(this).initLoader(LOADER_COURSES,null,this  );
+
+//        getLoader
 
 
         readDisplayStateValues(); // get current position or create a note and set the position
-        saveOriginalNoteValues();
+        if(savedInstanceState == null) {
+            saveOriginalNoteValues();
+        } else {
+          //  restoreOriginalNoteValues(savedInstanceState);
+        }
+
 
         mTextNoteTitle = findViewById(R.id.text_note_title);
         mTextNoteText =     findViewById(R.id.text_note_text);
 
         if(!mIsNewNote ) {
 
-          //  LoaderManager.getInstance(this).initLoader(LOADER_NOTES,null,this  );
+            LoaderManager.getInstance(this).initLoader(LOADER_NOTES,null,this  );
 
             Log.d(TAG,"onCreate");
 
@@ -113,7 +130,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                        .setAction("Actio
+                        n", null).show();
             }
         });*/
     }
@@ -295,6 +313,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         String courseId = mNoteCursor.getString(mCourseIdPos);
         String noteTitle = mNoteCursor.getString(mNoteTitlePos);
         String noteText = mNoteCursor.getString(mNoteTextPos);
+
         int courseIndex = getIndexOfCourseId(courseId);
 
 
@@ -315,6 +334,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private int getIndexOfCourseId(String courseId) {
 
           Cursor cursor = mAdapterCourses.getCursor();
+
           int courseIdPos = cursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_ID);
           int courseRowIndex = 0;
 
@@ -322,8 +342,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
           while(more)
           {
               String cursorCourseId = cursor.getString(courseIdPos);
-              if(courseId.equals(cursorCourseId))
-                  break;
+              if(courseId.equals(cursorCourseId)){
+                  break; }
               courseRowIndex++;
               more = cursor.moveToNext();
           }
@@ -361,19 +381,44 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
         CursorLoader loader = null;
-        if(id == LOADER_NOTES)
+        if(id == LOADER_NOTES) {
             loader = createLoaderNotes();
+        }
+        else{
+            loader = createLoaderCourse();
+        }
         return loader;
     }
 
-    private CursorLoader createLoaderNotes() {
+    private CursorLoader createLoaderCourse() {
+        mCourseQueryFinished = false;
+        return new CursorLoader(this){
 
+            @Override
+            public Cursor loadInBackground() {
+                SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+
+
+                String[] courseColumns = {
+                        CourseInfoEntry.COLUMN_COURSE_TITLE,
+                        CourseInfoEntry.COLUMN_COURSE_ID,
+                        CourseInfoEntry._ID
+
+                };
+
+                return db.query(CourseInfoEntry.TABLE_NAME, courseColumns,null,null,null,null,CourseInfoEntry.COLUMN_COURSE_TITLE );
+
+            }
+        };
+    }
+
+    private CursorLoader createLoaderNotes() {
+        mNotesQueryFinished = false;
         return new CursorLoader(this) {
             @Override
             public Cursor loadInBackground() {
                 SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
-                String courseId = "android_intents";
-                String titleStart = "dynamic";
+
                 String selection = NoteInfoEntry._ID +  " = ?";
 
                 String[] selectionArgs = {Integer.toString(mNoteId)};
@@ -397,8 +442,15 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
 
-         if(loader.getId() == LOADER_NOTES)
+         if(loader.getId() == LOADER_NOTES) {
              loaderFinishedNotes(data);
+
+         }
+         else if(loader.getId() == LOADER_COURSES)
+         {
+             mAdapterCourses.changeCursor(data);
+            mCourseQueryFinished = true;
+             displayNoteWhenQueriesFinished();}
 
     }
 
@@ -411,17 +463,28 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
         mNoteCursor.moveToNext();
-        displayNote();
+        mNotesQueryFinished = true;
+        displayNoteWhenQueriesFinished();
+
+    }
+
+    private void displayNoteWhenQueriesFinished() {
+        if(mNotesQueryFinished && mCourseQueryFinished)
+            displayNote();
+
 
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
 
-        if(loader.getId() == LOADER_NOTES){
-            if(mNoteCursor!=null)
-            {
-              mNoteCursor.close();
+        if (loader.getId() == LOADER_NOTES) {
+            if (mNoteCursor != null) {
+                mNoteCursor.close();
+            }
+            else if (loader.getId() == LOADER_NOTES) {
+
+                    mAdapterCourses.changeCursor(null);
             }
         }
     }

@@ -67,7 +67,7 @@ public class DataManager {
 
 
         }
-        System.out.println("Notes size : "+dm.mNotes.size());
+        //System.out.println("Notes size : "+dm.mNotes.size());
 
         cursor.close();
 

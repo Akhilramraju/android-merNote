@@ -49,6 +49,7 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         if(mCursor != null) mCursor.close();
 
         mCursor = cursor;
+        populateColumnPositioins();
         notifyDataSetChanged();
     }
     @NonNull

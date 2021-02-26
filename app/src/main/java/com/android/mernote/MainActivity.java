@@ -102,13 +102,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void loadNotes() {
         SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
-        final String [] NoteColumns = {
+        final String [] noteColumns = {
                 NoteInfoEntry.COLUMN_NOTE_TITLE,
                 NoteInfoEntry.COLUMN_COURSE_ID,
                 NoteInfoEntry._ID};
-        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, NoteColumns, null, null, null, null, NoteInfoEntry.COLUMN_NOTE_TITLE);
+        String noteorderBy = NoteInfoEntry.COLUMN_COURSE_ID +  "," + NoteInfoEntry.COLUMN_NOTE_TITLE;
+        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, noteColumns, null, null, null, null, noteorderBy);
         mNoteRecyclerAdapter.changeCursor(noteCursor);
-
 
     }
 
@@ -146,12 +146,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
       //  List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this,null);
-        displayNotes();
+
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
         mCourseRecyclerAdapter = new CourseRecyclerAdapter(this,courses);
 
-
+        displayNotes();
 
 
     }

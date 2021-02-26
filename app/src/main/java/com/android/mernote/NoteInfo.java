@@ -20,12 +20,20 @@ public final class NoteInfo implements Parcelable{
 
 
 
+
+
     public NoteInfo( int id, CourseInfo course, String title, String text) {
         mCourse = course;
         mTitle = title;
         mText = text;
         mId = id;
 
+    }
+
+    public NoteInfo(CourseInfo course, String title, String text) {
+        mCourse = course;
+        mTitle = title;
+        mText = text;
     }
     private NoteInfo(Parcel parcel){
         mCourse = parcel.readParcelable(CourseInfo.class.getClassLoader());
