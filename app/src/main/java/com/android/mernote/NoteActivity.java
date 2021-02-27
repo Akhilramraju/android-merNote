@@ -302,7 +302,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         int courseIdPos = cursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_ID);
         String courseId = cursor.getString(courseIdPos);
-        return null;
+        return courseId;
     }
 
     private void saveNoteToDatabase(String courseId, String noteTitle, String noteText){
