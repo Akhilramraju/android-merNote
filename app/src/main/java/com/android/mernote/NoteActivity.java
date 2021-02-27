@@ -256,7 +256,9 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onPause();
         if(mIsCancelling){
             if(mIsNewNote) {
-                DataManager.getInstance().removeNote(mNoteId);
+                deleteNoteFromDatabase();
+                //DataManager.getInstance().removeNote(mNoteId);
+
             }
             else{
                 storePreviousNoteValues();
@@ -267,6 +269,17 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         Log.d(TAG,"onPause");
+
+
+    }
+
+    private void deleteNoteFromDatabase() {
+            String selection = NoteInfoEntry._ID + " = ?";
+            String[] selectionArgs = {Integer.toString(mNoteId)};
+
+
+            SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
+            db.delete(NoteInfoEntry.TABLE_NAME,selection,selectionArgs);
 
 
     }
@@ -405,9 +418,20 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void createNewNote() {
 
+        ContentValues values = new ContentValues();
+        values.put(NoteInfoEntry.COLUMN_COURSE_ID,"");
+        values.put(NoteInfoEntry.COLUMN_NOTE_TITLE,"");
+        values.put(NoteInfoEntry.COLUMN_NOTE_TEXT,"");
 
-        DataManager dm = DataManager.getInstance();
-        mNoteId = dm.createNewNote();
+        SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
+
+        mNoteId = (int)db.insert(NoteInfoEntry.TABLE_NAME,null,values);
+
+
+
+
+        //DataManager dm = DataManager.getInstance();
+        //mNoteId = dm.createNewNote();
        // mNote = dm.getNotes().get(mNotePosition);
 
     }
