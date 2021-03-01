@@ -6,6 +6,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.BaseColumns;
 
 import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
@@ -20,9 +21,12 @@ public class NoteKeeperProvider extends ContentProvider {
 
     public static final int NOTES = 1;
 
+    public static final int NOTES_EXPANDED = 2;
+
     static {
         sUriMatcher.addURI(NoteKeeperProviderContract.AUTHORITY, Courses.PATH, COURSES);
         sUriMatcher.addURI(NoteKeeperProviderContract.AUTHORITY, Notes.PATH, NOTES);
+        sUriMatcher.addURI(NoteKeeperProviderContract.AUTHORITY,Notes.PATH_EXPANDED, NOTES_EXPANDED);
     }
 
 
@@ -77,9 +81,28 @@ public class NoteKeeperProvider extends ContentProvider {
                       cursor = db.query(NoteInfoEntry.TABLE_NAME,projection,selection,selectionArgs,null,null, sortOrder);
 
                 break;
+
+            case NOTES_EXPANDED:
+                        cursor = notesExpandedQuery(db,projection,selection,selectionArgs,sortOrder);
+                break;
         }
 
         return cursor;
+    }
+
+    private Cursor notesExpandedQuery(SQLiteDatabase db, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+
+        String[] columns = new String[projection.length];
+        for(int idx=0; idx< projection.length ; idx++ )
+        {
+            columns[idx] = projection[idx].equals(BaseColumns._ID) || projection[idx].equals(NoteKeeperProviderContract.CoursesIdColumns.COLUMN_COURSE_ID) ? NoteInfoEntry.getQName(projection[idx]) : projection[idx];
+        }
+
+        String tableswithJoin = NoteInfoEntry.TABLE_NAME + " JOIN " + CourseInfoEntry.TABLE_NAME + " ON "
+                + NoteInfoEntry.getQName( NoteInfoEntry.COLUMN_COURSE_ID)
+                +  " = " + CourseInfoEntry.getQName(CourseInfoEntry.COLUMN_COURSE_ID);
+
+        return db.query(tableswithJoin, columns,selection,selectionArgs, null, null, sortOrder);
     }
 
     @Override

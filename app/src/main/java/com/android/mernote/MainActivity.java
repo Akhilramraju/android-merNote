@@ -11,6 +11,7 @@ import android.view.Menu;
 
 import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
+import com.android.mernote.NoteKeeperProviderContract.Notes;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -242,21 +243,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
         CursorLoader loader = null;
         if(id == LOADER_NOTES) {
-            loader = new CursorLoader(this) {
-                @Override
-                public Cursor loadInBackground() {
-                    SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
                     final String[] noteColumns = {
-                            NoteInfoEntry.getQName(NoteInfoEntry._ID),
-                            NoteInfoEntry.COLUMN_NOTE_TITLE,
+                            Notes._ID,
+                            Notes.COLUMN_NOTE_TITLE,
                      //       NoteInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID),
-                            CourseInfoEntry.COLUMN_COURSE_TITLE
+                            Notes.COLUMN_COURSE_TITLE
                     };
 
-                    final String noteOrderBy = CourseInfoEntry.COLUMN_COURSE_TITLE +
-                            "," + NoteInfoEntry.COLUMN_NOTE_TITLE;
+                    final String noteOrderBy = Notes.COLUMN_COURSE_TITLE +
+                            "," + Notes.COLUMN_NOTE_TITLE;
 
-                    //joining note_info and
+                    loader = new CursorLoader(this, Notes.CONTENT_EXPANDED_URI,noteColumns,null,null,noteOrderBy);
+
+          /*          //joining note_info and
 
                     String tableswithJoin = NoteInfoEntry.TABLE_NAME + " JOIN " + CourseInfoEntry.TABLE_NAME + " ON "
                             + NoteInfoEntry.getQName( NoteInfoEntry.COLUMN_COURSE_ID)
@@ -264,9 +263,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     return db.query(tableswithJoin, noteColumns,
                             null, null, null, null, noteOrderBy);
-                }
+                }*/
             };
-        }
+
         return loader;
     }
 
