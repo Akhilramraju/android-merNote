@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -451,7 +452,21 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private CursorLoader createLoaderCourse() {
         mCourseQueryFinished = false;
-        return new CursorLoader(this){
+
+        Uri uri = Uri.parse("content://com.android.mernote.notekeeper.provider");
+
+        String[] courseColumns = {
+                CourseInfoEntry.COLUMN_COURSE_TITLE,
+                CourseInfoEntry.COLUMN_COURSE_ID,
+                CourseInfoEntry._ID
+
+        };
+        CursorLoader loader =  new CursorLoader(this,uri,courseColumns, null,null,  CourseInfoEntry.COLUMN_COURSE_TITLE);
+         return loader;
+
+
+        // using content provider instead of loadInBackground
+   /*     return new CursorLoader(this){
 
             @Override
             public Cursor loadInBackground() {
@@ -468,7 +483,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
                 return db.query(CourseInfoEntry.TABLE_NAME, courseColumns,null,null,null,null,CourseInfoEntry.COLUMN_COURSE_TITLE );
 
             }
-        };
+        };*/
     }
 
     private CursorLoader createLoaderNotes() {

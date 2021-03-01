@@ -9,9 +9,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MerNote">
+        <provider
+            android:name=".NoteKeeperProvider"
+            android:authorities="com.android.mernote.notekeeper.provider"
+            android:enabled="true"
+            android:exported="true"></provider>
+
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
         <activity
             android:name=".MainActivity"
             android:label="Note Keeper"
@@ -39,7 +45,6 @@
             android:name=".NoteActivity"
             android:label="@string/title_activity_note"
             android:theme="@style/Theme.MerNote.NoActionBar" />
-
     </application>
 
 </manifest>
