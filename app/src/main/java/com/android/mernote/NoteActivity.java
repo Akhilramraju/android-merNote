@@ -25,6 +25,7 @@ import android.widget.Spinner;
 
 import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
+import com.android.mernote.NoteKeeperProviderContract.Courses;
 
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
     public static final int LOADER_COURSES = 1;
@@ -453,15 +454,16 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private CursorLoader createLoaderCourse() {
         mCourseQueryFinished = false;
 
-        Uri uri = Uri.parse("content://com.android.mernote.notekeeper.provider");
+
+        Uri uri = Courses.CONTENT_URI;
 
         String[] courseColumns = {
-                CourseInfoEntry.COLUMN_COURSE_TITLE,
-                CourseInfoEntry.COLUMN_COURSE_ID,
-                CourseInfoEntry._ID
+                Courses.COLUMN_COURSE_TITLE,
+                Courses.COLUMN_COURSE_ID,
+                Courses._ID
 
         };
-        CursorLoader loader =  new CursorLoader(this,uri,courseColumns, null,null,  CourseInfoEntry.COLUMN_COURSE_TITLE);
+        CursorLoader loader =  new CursorLoader(this,uri,courseColumns, null,null,  Courses.COLUMN_COURSE_TITLE);
          return loader;
 
 

@@ -2,13 +2,29 @@ package com.android.mernote;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
+import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
+import com.android.mernote.NoteKeeperProviderContract.Courses;
+import com.android.mernote.NoteKeeperProviderContract.Notes;
 
 public class NoteKeeperProvider extends ContentProvider {
+
+    private static UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    public static final int COURSES = 0;
+
+    public static final int NOTES = 1;
+
+    static {
+        sUriMatcher.addURI(NoteKeeperProviderContract.AUTHORITY, Courses.PATH, COURSES);
+        sUriMatcher.addURI(NoteKeeperProviderContract.AUTHORITY, Notes.PATH, NOTES);
+    }
+
 
     private NoteKeeperOpenHelper mDbOpenHelper;
 
@@ -48,7 +64,21 @@ public class NoteKeeperProvider extends ContentProvider {
         Cursor cursor = null;
 
         SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
-        cursor = db.query(CourseInfoEntry.TABLE_NAME,projection,selection,selectionArgs,null,null, sortOrder);
+
+         int uriMatch = sUriMatcher.match(uri);
+        switch (uriMatch)
+        {
+            case COURSES:
+                cursor = db.query(CourseInfoEntry.TABLE_NAME,projection,selection,selectionArgs,null,null, sortOrder);
+
+            break;
+
+            case NOTES:
+                      cursor = db.query(NoteInfoEntry.TABLE_NAME,projection,selection,selectionArgs,null,null, sortOrder);
+
+                break;
+        }
+
         return cursor;
     }
 
