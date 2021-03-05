@@ -1,10 +1,12 @@
 package com.android.mernote;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,13 +21,17 @@ import androidx.loader.content.Loader;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 
 import com.android.mernote.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.android.mernote.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.android.mernote.NoteKeeperProviderContract.Courses;
+import com.android.mernote.NoteKeeperProviderContract.Notes;
+import com.google.android.material.snackbar.Snackbar;
 
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
     public static final int LOADER_COURSES = 1;
@@ -39,6 +45,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private final int LOADER_NOTES = 0;
     private boolean mCourseQueryFinished;
     private boolean mNotesQueryFinished;
+    private Uri mUri;
+    private Uri mNotesUri;
 
     @Override
     protected void onDestroy() {
@@ -221,8 +229,17 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         {
             moveNext();
         }
+     /*   else if (id == R.id.action_set_reminder)
+        {
+            showReminderNotification();
+        }*/
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showReminderNotification() {
+        //NoteReminderNotification.notify(this,"This is dummy title","Dummy text",0);
+
     }
 
     @Override
@@ -377,6 +394,10 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mTextNoteText.setText(noteText);
         mTextNoteTitle.setText(noteTitle);
 
+        CourseEventBroadcastHelper.sendEventBroadcast(this, courseId,"Editing note");
+
+
+
     }
 
     private int getIndexOfCourseId(String courseId) {
@@ -420,14 +441,69 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void createNewNote() {
 
+
+        AsyncTask<ContentValues,Integer,Uri> task = new AsyncTask<ContentValues, Integer, Uri>() {
+
+            private ProgressBar mProgressBar;
+
+            @Override
+            protected void onPreExecute() {
+                mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+                mProgressBar.setVisibility(View.VISIBLE);
+                mProgressBar.setProgress(1);
+
+            }
+
+            @Override
+            protected Uri doInBackground(ContentValues... params) {
+                Log.d(TAG,"Do in background  : thread: "+Thread.currentThread().getId());
+                ContentValues insertValues = params[0];
+                Uri rowUri = getContentResolver().insert(Notes.CONTENT_URI, insertValues);
+
+                publishProgress(2);
+                sumilateLongRunningWork(); // simulate slow work with data
+                publishProgress(3);
+                
+
+
+                return rowUri;
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                int progressValue = values[0];
+                mProgressBar.setProgress(progressValue);
+
+
+            }
+
+            @Override
+            protected void onPostExecute(Uri uri) {
+                Log.d(TAG,"on post execute : thread: "+Thread.currentThread().getId());
+                mNotesUri = uri;
+                displaySnackbar(mNotesUri.toString());
+                mProgressBar.setVisibility(View.GONE);
+            }
+        };
+
         ContentValues values = new ContentValues();
-        values.put(NoteInfoEntry.COLUMN_COURSE_ID,"");
-        values.put(NoteInfoEntry.COLUMN_NOTE_TITLE,"");
-        values.put(NoteInfoEntry.COLUMN_NOTE_TEXT,"");
+        values.put(Notes.COLUMN_COURSE_ID,"");
+        values.put(Notes.COLUMN_NOTE_TITLE,"");
+        values.put(Notes.COLUMN_NOTE_TEXT,"");
 
-        SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
+        Log.d(TAG,"call to execute : thread: "+Thread.currentThread().getId());
+        task.execute(values);
 
-        mNoteId = (int)db.insert(NoteInfoEntry.TABLE_NAME,null,values);
+
+
+        //mUri = getContentResolver().insert(Notes.CONTENT_URI,values);
+
+
+
+
+  /*      SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
+
+        mNoteId = (int)db.insert(NoteInfoEntry.TABLE_NAME,null,values);*/
 
 
 
@@ -435,6 +511,19 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         //DataManager dm = DataManager.getInstance();
         //mNoteId = dm.createNewNote();
        // mNote = dm.getNotes().get(mNotePosition);
+
+    }
+
+    private void sumilateLongRunningWork() {
+        try {
+            Thread.sleep(2000);
+        } catch(Exception ex) {}
+    }
+
+    private void displaySnackbar(String message) {
+        View view = findViewById(R.id.spinner_courses);
+        Snackbar.make( view, message, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
 
     }
 
@@ -490,7 +579,20 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private CursorLoader createLoaderNotes() {
         mNotesQueryFinished = false;
-        return new CursorLoader(this) {
+
+
+        String[] noteColumns = {
+                Notes._ID,
+                Notes.COLUMN_COURSE_ID,
+                Notes.COLUMN_NOTE_TITLE,
+                Notes.COLUMN_NOTE_TEXT
+
+        };
+        mNotesUri = ContentUris.withAppendedId(Notes.CONTENT_URI,mNoteId);
+        return new CursorLoader(this,mNotesUri,noteColumns,null,null,null);
+
+
+     /*   return new CursorLoader(this) {
             @Override
             public Cursor loadInBackground() {
                 SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
@@ -511,7 +613,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
             }
-        };
+        };*/
     }
 
 
